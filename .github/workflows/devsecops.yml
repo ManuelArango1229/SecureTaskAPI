@@ -1,0 +1,50 @@
+name: DevSecOps – SecureTaskAPI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/securetaskapi
+          tags: type=sha,prefix=
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+
+  security:
+    needs: build-image
+    uses: ManuelArango1229/devsecops-engine-/.github/workflows/reusable-devsecops.yml@main
+    with:
+      target_image:  ${{ needs.build-image.outputs.image }}
+      target_port:   '3000'
+      service_name:  'secure-task-api'
+      criticality:   'high'
+      environment:   'staging'
+      source_repo:   'ManuelArango1229/SecureTaskAPI'
+      language:      'nodejs'
+      use_ghcr:      true
+    secrets:
+      GROQ_API_KEY:  ${{ secrets.GROQ_API_KEY }}
+      GHCR_TOKEN:    ${{ secrets.GITHUB_TOKEN }}
+      APP_SECRETS:   "JWT_SECRET=super-secure-random-64-char-secret-for-tg-univalle-2026"
