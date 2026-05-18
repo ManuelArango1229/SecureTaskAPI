@@ -1,0 +1,5 @@
+# DoS-only en dependencias transitivas, sin fix disponible
+CVE-2026-26996
+CVE-2026-27903
+CVE-2026-27904
+CVE-2025-64756
