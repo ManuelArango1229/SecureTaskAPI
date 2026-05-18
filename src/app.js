@@ -45,6 +45,11 @@ function authenticate(req, res, next) {
 }
 
 // ── Routes ────────────────────────────────────────────────────
+
+
+app.get('/', (_req, res) => res.json({ name: 'SecureTaskAPI', status: 'ok' }));
+
+
 app.post('/auth/register',
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 8 }),
